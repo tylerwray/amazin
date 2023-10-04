@@ -22,7 +22,8 @@
   <div class="pt-8">
     <h1 class="text-4xl pb-2"><%= @product.name %></h1>
     <div class="text-gray-500 pb-8"><%= @product.description %></div>
-    <div class="font-bold text-5xl"><%= Money.new(@product.amount) %></div>
+    <div class="font-bold text-5xl pb-4"><%= Money.new(@product.amount) %></div>
+    <div><%= @product.stock %> remaining</div>
   </div>
 </div>
 
