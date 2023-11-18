@@ -39,6 +39,11 @@ defmodule AmazinWeb.Endpoint do
   plug Plug.RequestId
   plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
 
+  plug Stripe.WebhookPlug,
+    at: "/webhooks/stripe",
+    handler: AmazinWeb.StripeWebhookHandler,
+    secret: Application.compile_env(:amazin, :stripe_webhook_secret)
+
   plug Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],
     pass: ["*/*"],

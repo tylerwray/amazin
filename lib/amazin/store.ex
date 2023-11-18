@@ -147,4 +147,83 @@ defmodule Amazin.Store do
   def broadcast_product_event(event, product) do
     Phoenix.PubSub.broadcast(Amazin.PubSub, "products", {event, product})
   end
+
+  alias Amazin.Store.Cart
+
+  @doc """
+  Create a cart.
+
+  ## Examples
+
+      iex> create_cart()
+      {:ok, %Cart{}}
+
+  """
+  def create_cart do
+    Repo.insert(%Cart{status: :open})
+  end
+
+  @doc """
+  Get a cart by id.
+
+  ## Examples
+
+      iex> get_cart(1)
+      %Cart{}
+
+  """
+  def get_cart(id) do
+    Repo.get(Cart, id)
+  end
+
+  alias Amazin.Store.CartItem
+
+  @doc """
+  List products in a cart.
+
+  ## Examples
+
+      iex> list_cart_items(344)
+      [%CartItem{}, %CartItem{}]
+  """
+  def list_cart_items(cart_id) do
+    CartItem
+    |> where([ci], ci.cart_id == ^cart_id)
+    |> preload(:product)
+    |> Repo.all()
+  end
+
+  @doc """
+  Add a product to a cart. Increments quantity on conflict.
+
+  ## Examples
+
+      iex> add_item_to_cart(1, %Product{})
+      {:ok, %Product{}}
+  """
+  def add_item_to_cart(cart_id, product) do
+    Repo.insert(%CartItem{cart_id: cart_id, product: product, quantity: 1},
+      conflict_target: [:cart_id, :product_id],
+      on_conflict: [inc: [quantity: 1]]
+    )
+  end
+
+  alias Amazin.Store.Order
+
+  @doc """
+  Create an order and complete a cart.
+
+  ## Examples
+
+      iex> crate_order(1)
+      {:ok, %Order{}}
+  """
+  def create_order(cart_id) do
+    cart_id
+    |> get_cart()
+    |> Cart.changeset(%{status: :completed})
+    |> Repo.update()
+
+    Repo.insert(%Order{cart_id: cart_id})
+  end
 end
